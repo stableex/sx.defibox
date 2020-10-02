@@ -87,25 +87,28 @@ namespace defibox {
         typedef eosio::singleton< "config"_n, config_row > config;
 
         /**
+         * returns sorted token addresses, used to handle return values from pairs sorted in this order
+         */
+        static pair<asset, asset> sortTokens( const asset tokenA, const asset tokenB )
+        {
+            check(tokenA.symbol != tokenB.symbol, "DefiboxLibrary: IDENTICAL_ASSETS");
+            return tokenA.symbol < tokenB.symbol ? pair<asset, asset>{tokenA, tokenB} : pair<asset, asset>{tokenB, tokenA};
+        }
+
+        /**
          * fetches and sorts the reserves for a pair
          *
-         * @returns set<asset> (reserveA, reserveB)
+         * @returns pair<asset, asset> (reserveA, reserveB)
          */
-        static pair<asset, asset> getReserves( const uint64_t pair_id, const symbol_code tokenA, const symbol_code tokenB )
+        static pair<asset, asset> getReserves( const uint64_t pair_id, const symbol tokenA )
         {
             // table
             defibox::swap::pairs _pairs( "swap.defi"_n, "swap.defi"_n.value );
-            auto itr = _pairs.find( pair_id );
+            auto pairs = _pairs.get( pair_id, "DefiboxLibrary: INVALID_PAIR_ID" );
 
-            // checks
-            check( tokenA != tokenB, "DefiboxLibrary: IDENTICAL_SYMBOL_CODES");
-            check( itr != _pairs.end(), "DefiboxLibrary: INVALID_PAIR_ID");
-
-            // order reserves based on tokenA & tokenB
-            const asset reserveA = tokenA == itr->reserve0.symbol.code() ? itr->reserve0 : itr->reserve1;
-            const asset reserveB = tokenA == itr->reserve0.symbol.code() ? itr->reserve1 : itr->reserve0;
-
-            return pair<asset, asset>{ reserveA, reserveB };
+            return tokenA == pairs.reserve0.symbol ?
+                pair<asset, asset>{ pairs.reserve0, pairs.reserve1 } :
+                pair<asset, asset>{ pairs.reserve1, pairs.reserve0 };
         }
 
         /**

@@ -7,13 +7,15 @@
 ```c++
 #include "defibox.hpp"
 
-// get reserves
-const uint64_t pair_id = 12; // EOS/USDT pair
-const pair<asset, asset> reserves = defibox::swap::getReserves( pair_id, symbol_code{"EOS"}, symbol_code{"USDT"});
-
-// calculate price
+// user input
 const asset quantity = asset{10000, symbol{"EOS", 4}};
-const asset out = defibox::swap::getAmountOut( quantity, reserves.first, reserves.second );
+const uint64_t pair_id = 12; // EOS/USDT pair
+
+// get reserves
+const auto [ reserveIn, reserveOut ] = defibox::swap::getReserves( pair_id, quantity.symbol );
+
+// calculate out price
+const asset out = defibox::swap::getAmountOut( quantity, reservesIn, reservesOut );
 // => "2.6500 USDT"
 ```
 

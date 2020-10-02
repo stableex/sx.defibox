@@ -14,7 +14,7 @@ eosio-cpp __tests__/basic.cpp
 cleos set contract basic . basic.wasm basic.abi
 
 # getReserve
-cleos -v push action basic getreserves '[12, "EOS", "USDT"]' -p basic
+cleos -v push action basic getreserves '[12, "4,EOS"]' -p basic
 # //=>
 
 # getAmountOut

@@ -10,11 +10,11 @@ public:
     using contract::contract;
 
     [[eosio::action]]
-    void getreserves( const uint64_t pair_id, const symbol_code tokenA, const symbol_code tokenB )
+    void getreserves( const uint64_t pair_id, const symbol tokenA )
     {
-        const pair<asset, asset> reserves = defibox::swap::getReserves( pair_id, tokenA, tokenB );
-        print( reserves.first );
-        print( reserves.second );
+        const auto [ reserveIn, reserveOut] = defibox::swap::getReserves( pair_id, tokenA );
+        print( reserveIn );
+        print( reserveOut );
     }
 
     [[eosio::action]]
@@ -33,6 +33,13 @@ public:
 
     [[eosio::action]]
     void quote( const asset amountA, const asset reserveA, const asset reserveB, const asset expect ) {
+        const asset amountB = defibox::swap::quote( amountA, reserveA, reserveB );
+        print( amountB );
+        check( amountB == expect, "quote does not match expect");
+    }
+
+    [[eosio::action]]
+    void getrate( const asset amountA, const asset reserveA, const asset reserveB, const asset expect ) {
         const asset amountB = defibox::swap::quote( amountA, reserveA, reserveB );
         print( amountB );
         check( amountB == expect, "quote does not match expect");
