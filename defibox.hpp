@@ -13,6 +13,15 @@ using namespace std;
 
 namespace defibox {
 
+    struct token {
+        name contract;
+        symbol symbol;
+
+        string to_string() const {
+            return contract.to_string() + "-" + symbol.code().to_string();
+        };
+    };
+
     class [[eosio::contract("stake.defi")]] stake : public contract {
     public:
         using contract::contract;
@@ -50,8 +59,8 @@ namespace defibox {
          */
         struct [[eosio::table]] pairs_row {
             uint64_t            id;
-            extended_symbol     token0;
-            extended_symbol     token1;
+            token               token0;
+            token               token1;
             asset               reserve0;
             asset               reserve1;
             uint64_t            liquidity_token;
