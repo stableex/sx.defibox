@@ -224,8 +224,8 @@ namespace defibox {
      */
     static asset quote( const asset amountA, const asset reserveA, const asset reserveB )
     {
-        check(amountA.amount > 0, "DefiboxV2Library: INSUFFICIENT_AMOUNT");
-        check(reserveA.amount > 0 && reserveB.amount > 0, "DefiboxV2Library: INSUFFICIENT_LIQUIDITY");
+        check(amountA.amount > 0, "DefiboxLibrary: INSUFFICIENT_AMOUNT");
+        check(reserveA.amount > 0 && reserveB.amount > 0, "DefiboxLibrary: INSUFFICIENT_LIQUIDITY");
         const double amountB = defibox::asset_to_double( amountA ) * defibox::asset_to_double( reserveB ) / defibox::asset_to_double( reserveA );
         return defibox::double_to_asset( amountB, reserveB.symbol );
     }
