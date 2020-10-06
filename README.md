@@ -27,8 +27,8 @@ const asset out = uniswap::get_amount_out( quantity, reserves_in, reserves_out, 
 
 ## Table of Content
 
-- [STATIC `get_reserves`](#action-get_reserves)
-- [STATIC `get_fee`](#action-get_fee)
+- [STATIC `get_reserves`](#static-get_reserves)
+- [STATIC `get_fee`](#static-get_fee)
 
 ## STATIC `get_reserves`
 
