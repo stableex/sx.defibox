@@ -49,7 +49,7 @@ Get reserves for a pair
 const uint64_t pair_id = 12;
 const symbol sort = symbol{"EOS", 4};
 
-const auto [reserve0, reserve1] = defibox::get_reserves( pair_id );
+const auto [reserve0, reserve1] = defibox::get_reserves( pair_id, sort );
 // reserve0 => "4585193.1234 EOS"
 // reserve1 => "12568203.3533 USDT"
 ```
