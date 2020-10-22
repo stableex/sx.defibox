@@ -192,7 +192,10 @@ typedef eosio::multi_index< "pools"_n, pools_row > pools;
         auto poolit = _pools.find( pair_id );
         if(poolit==_pools.end()) return res;
 
-        res.amount = (eos.amount / 10000) * (poolit->balance.amount / 10000);  //{0.01% of the pool balance} * {rounded EOS tokens}
+        float newsecs = current_time_point().sec_since_epoch() - poolit->last_issue_time.sec_since_epoch();  //second since last update
+        uint64_t newbox = poolit->weight * 0.002 * 0.7 * newsecs * 1000000; //adjust vs last update time
+
+        res.amount = (eos.amount / 10000) * ((poolit->balance.amount + newbox) / 10000);  //{0.01% of the pool balance} * {rounded EOS tokens}
         return res;
     }
 }
