@@ -131,7 +131,7 @@ namespace defibox {
     {
         // table
         defibox::pairs _pairs( "swap.defi"_n, "swap.defi"_n.value );
-        auto pairs = _pairs.get( pair_id, "DefiboxLibrary: INVALID_PAIR_ID" );
+        auto pairs = _pairs.get( pair_id, "SX.Defibox: INVALID_PAIR_ID" );
         eosio::check( pairs.reserve0.symbol == sort || pairs.reserve1.symbol == sort, "sort symbol does not match" );
 
         return sort == pairs.reserve0.symbol ?
