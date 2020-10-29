@@ -7,6 +7,7 @@ namespace defibox {
 
     using eosio::asset;
     using eosio::symbol;
+    using eosio::symbol_code;
     using eosio::name;
     using eosio::singleton;
     using eosio::multi_index;
@@ -189,9 +190,10 @@ typedef eosio::multi_index< "pools"_n, pools_row > pools;
     static asset get_rewards( const uint64_t pair_id, asset from, asset to )
     {
         asset res {0, symbol{"BOX",6}};
-        auto eos = from.symbol.code() == symbol_code{"EOS"} ? from : to;
-        if(eos.symbol.code() != symbol_code{"EOS"})
-            return res;     //return 0 if non-EOS pair
+        auto eos = from.symbol == symbol{"EOS", 4} ? from : to;
+
+        //return 0 if non-EOS pair
+        if ( eos.symbol != symbol{"EOS", 4}) return res;
 
         defibox::pools _pools( "mine2.defi"_n, "mine2.defi"_n.value );
         auto poolit = _pools.find( pair_id );
