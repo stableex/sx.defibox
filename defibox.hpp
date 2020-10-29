@@ -8,16 +8,10 @@ namespace defibox {
 
     using eosio::asset;
     using eosio::symbol;
-    using eosio::symbol_code;
     using eosio::name;
     using eosio::singleton;
     using eosio::multi_index;
     using eosio::time_point_sec;
-    using eosio::current_time_point;
-
-    // references
-    static name account() { return "defibox"_n; }
-    static name exchange() { return "swap.defi"_n; }
 
     /**
      * Custom Token struct
@@ -154,7 +148,7 @@ namespace defibox {
     {
         // table
         defibox::pairs _pairs( "swap.defi"_n, "swap.defi"_n.value );
-        auto pairs = _pairs.get( pair_id, "SX.Defibox: INVALID_PAIR_ID" );
+        auto pairs = _pairs.get( pair_id, "DefiboxLibrary: INVALID_PAIR_ID" );
         eosio::check( pairs.reserve0.symbol == sort || pairs.reserve1.symbol == sort, "sort symbol does not match" );
 
         return sort == pairs.reserve0.symbol ?
@@ -192,10 +186,9 @@ namespace defibox {
     static asset get_rewards( const uint64_t pair_id, asset from, asset to )
     {
         asset res {0, symbol{"BOX",6}};
-        auto eos = from.symbol == symbol{"EOS", 4} ? from : to;
-
-        //return 0 if non-EOS pair
-        if ( eos.symbol != symbol{"EOS", 4}) return res;
+        auto eos = from.symbol.code() == symbol{"EOS"} ? from : to;
+        if(eos.symbol.code() != symbol{"EOS"})
+            return res;     //return 0 if non-EOS pair
 
         defibox::pools _pools( "mine2.defi"_n, "mine2.defi"_n.value );
         auto poolit = _pools.find( pair_id );
