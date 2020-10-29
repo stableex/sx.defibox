@@ -1,7 +1,8 @@
 #pragma once
 
-#include <eosio/singleton.hpp>
 #include <eosio/asset.hpp>
+#include <eosio/singleton.hpp>
+#include <math.h>
 
 namespace defibox {
 
@@ -82,18 +83,18 @@ namespace defibox {
     /**
      * Defibox mine pools
      */
-struct [[eosio::table("pools")]] pools_row {
-    uint64_t        pair_id;
-    double_t        weight;
-    asset           balance;
-    asset           issued;
-    time_point_sec  last_issue_time;
-    time_point_sec  start_time;
-    time_point_sec  end_time;
+    struct [[eosio::table("pools")]] pools_row {
+        uint64_t        pair_id;
+        double_t        weight;
+        asset           balance;
+        asset           issued;
+        time_point_sec  last_issue_time;
+        time_point_sec  start_time;
+        time_point_sec  end_time;
 
-    uint64_t primary_key() const { return pair_id; }
-};
-typedef eosio::multi_index< "pools"_n, pools_row > pools;
+        uint64_t primary_key() const { return pair_id; }
+    };
+    typedef eosio::multi_index< "pools"_n, pools_row > pools;
 
     /**
      * ## STATIC `get_fee`
@@ -181,6 +182,7 @@ typedef eosio::multi_index< "pools"_n, pools_row > pools;
      * // rewards => "0.123456 BOX"
      * ```
      */
+
     static asset get_rewards( const uint64_t pair_id, asset from, asset to )
     {
         asset res {0, symbol{"BOX",6}};
@@ -193,14 +195,11 @@ typedef eosio::multi_index< "pools"_n, pools_row > pools;
         if(poolit==_pools.end()) return res;
 
         float newsecs = current_time_point().sec_since_epoch() - poolit->last_issue_time.sec_since_epoch();  //seconds since last update
-        uint64_t newbox = poolit->weight * 0.002 * 0.7 * newsecs * 1000000; //adjust vs last update time
-        auto times = eos.amount / 10000;
-        auto total = poolit->balance.amount + newbox;
-        while(times--){
-            auto mined = total/10000;   //0.01% of the pool balance
-            total -= mined;
-            res.amount += mined;
-        }
+        auto total = poolit->balance.amount + poolit->weight * 0.002 * 0.7 * newsecs * 1000000; //adjust vs last update time
+
+        res.amount = total - total * pow(0.9999, eos.amount / 10000);
+
         return res;
     }
+
 }
