@@ -170,8 +170,8 @@ namespace defibox {
      * ### params
      *
      * - `{uint64_t} pair_id` - pair id
-     * - `{asset} from` - tokens we are trading from
-     * - `{asset} to` - tokens we are trading to
+     * - `{asset} in` - input quantity
+     * - `{asset} out` - output quantity
      *
      * ### returns
      *
@@ -181,31 +181,30 @@ namespace defibox {
      *
      * ```c++
      * const uint64_t pair_id = 12;
-     * const asset from = asset{10000, {"EOS", 4}};
-     * const asset to = asset{12345, {"USDT", 4}};
+     * const asset in = asset{10000, {"EOS", 4}};
+     * const asset out = asset{12345, {"USDT", 4}};
      *
-     * const auto rewards = defibox::get_rewards( pair_id, from, to);
+     * const auto rewards = defibox::get_rewards( pair_id, in, out );
      * // rewards => "0.123456 BOX"
      * ```
      */
 
-    static asset get_rewards( const uint64_t pair_id, asset from, asset to )
+    static asset get_rewards( const uint64_t pair_id, asset in, asset out )
     {
-        asset res {0, symbol{"BOX",6}};
-        auto eos = from.symbol == symbol{"EOS",4} ? from : to;
-        if(eos.symbol != symbol{"EOS",4})
-            return res;     //return 0 if non-EOS pair
+        asset rewards {0, symbol{"BOX",6}};
+        auto eos = in.symbol == symbol{"EOS",4} ? in : out;
+        if (eos.symbol != symbol{"EOS",4}) return rewards; //return 0 if non-EOS pair
 
         defibox::pools _pools( "mine2.defi"_n, "mine2.defi"_n.value );
         auto poolit = _pools.find( pair_id );
-        if(poolit==_pools.end()) return res;
+        if (poolit==_pools.end()) return rewards;
 
-        float newsecs = eosio::current_time_point().sec_since_epoch() - poolit->last_issue_time.sec_since_epoch();  //seconds since last update
-        auto total = poolit->balance.amount + poolit->weight * 0.002 * 0.7 * newsecs * 1000000; //adjust vs last update time
+        const double newsecs = eosio::current_time_point().sec_since_epoch() - poolit->last_issue_time.sec_since_epoch(); //seconds since last update
+        const double total = poolit->balance.amount + poolit->weight * 0.002 * 0.7 * newsecs * 1000000; //adjust vs last update time
 
-        res.amount = total - total * pow(0.9999, eos.amount / 10000);
+        rewards.amount = total - total * pow(0.9999, eos.amount / 10000);
 
-        return res;
+        return rewards;
     }
 
 }
