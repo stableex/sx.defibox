@@ -1,13 +1,13 @@
 #pragma once
 
-#include <eosio/singleton.hpp>
 #include <eosio/asset.hpp>
+#include <eosio/singleton.hpp>
+#include <math.h>
 
 namespace defibox {
 
     using eosio::asset;
     using eosio::symbol;
-    using eosio::symbol_code;
     using eosio::name;
     using eosio::singleton;
     using eosio::multi_index;
@@ -88,18 +88,18 @@ namespace defibox {
     /**
      * Defibox mine pools
      */
-struct [[eosio::table("pools")]] pools_row {
-    uint64_t        pair_id;
-    double_t        weight;
-    asset           balance;
-    asset           issued;
-    time_point_sec  last_issue_time;
-    time_point_sec  start_time;
-    time_point_sec  end_time;
+    struct [[eosio::table("pools")]] pools_row {
+        uint64_t        pair_id;
+        double_t        weight;
+        asset           balance;
+        asset           issued;
+        time_point_sec  last_issue_time;
+        time_point_sec  start_time;
+        time_point_sec  end_time;
 
-    uint64_t primary_key() const { return pair_id; }
-};
-typedef eosio::multi_index< "pools"_n, pools_row > pools;
+        uint64_t primary_key() const { return pair_id; }
+    };
+    typedef eosio::multi_index< "pools"_n, pools_row > pools;
 
     /**
      * ## STATIC `get_fee`
@@ -153,8 +153,9 @@ typedef eosio::multi_index< "pools"_n, pools_row > pools;
     {
         // table
         defibox::pairs _pairs( "swap.defi"_n, "swap.defi"_n.value );
-        auto pairs = _pairs.get( pair_id, "SX.Defibox: INVALID_PAIR_ID" );
-        eosio::check( pairs.reserve0.symbol == sort || pairs.reserve1.symbol == sort, "sort symbol does not match" );
+        auto pairs = _pairs.get( pair_id, "DefiboxLibrary: INVALID_PAIR_ID" );
+        //eosio::check( pairs.reserve0.symbol == sort || pairs.reserve1.symbol == sort, "DefiboxLibrary: sort symbol "+sort.code().to_string()+" for pair "+to_string(pair_id)+" does not match reserves: "+pairs.reserve0.symbol.code().to_string()+","+pairs.reserve1.symbol.code().to_string());
+        eosio::check( pairs.reserve0.symbol == sort || pairs.reserve1.symbol == sort, "DefiboxLibrary: sort symbol doesn't match");
 
         return sort == pairs.reserve0.symbol ?
             std::pair<asset, asset>{ pairs.reserve0, pairs.reserve1 } :
@@ -187,27 +188,24 @@ typedef eosio::multi_index< "pools"_n, pools_row > pools;
      * // rewards => "0.123456 BOX"
      * ```
      */
+
     static asset get_rewards( const uint64_t pair_id, asset from, asset to )
     {
         asset res {0, symbol{"BOX",6}};
-        auto eos = from.symbol == symbol{"EOS", 4} ? from : to;
-
-        //return 0 if non-EOS pair
-        if ( eos.symbol != symbol{"EOS", 4}) return res;
+        auto eos = from.symbol == symbol{"EOS",4} ? from : to;
+        if(eos.symbol != symbol{"EOS",4})
+            return res;     //return 0 if non-EOS pair
 
         defibox::pools _pools( "mine2.defi"_n, "mine2.defi"_n.value );
         auto poolit = _pools.find( pair_id );
         if(poolit==_pools.end()) return res;
 
-        float newsecs = current_time_point().sec_since_epoch() - poolit->last_issue_time.sec_since_epoch();  //seconds since last update
-        uint64_t newbox = poolit->weight * 0.002 * 0.7 * newsecs * 1000000; //adjust vs last update time
-        auto times = eos.amount / 10000;
-        auto total = poolit->balance.amount + newbox;
-        while (times--) {
-            auto mined = total / 10000;   //0.01% of the pool balance
-            total -= mined;
-            res.amount += mined;
-        }
+        float newsecs = eosio::current_time_point().sec_since_epoch() - poolit->last_issue_time.sec_since_epoch();  //seconds since last update
+        auto total = poolit->balance.amount + poolit->weight * 0.002 * 0.7 * newsecs * 1000000; //adjust vs last update time
+
+        res.amount = total - total * pow(0.9999, eos.amount / 10000);
+
         return res;
     }
+
 }
