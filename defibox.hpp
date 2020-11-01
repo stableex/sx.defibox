@@ -14,9 +14,9 @@ namespace defibox {
     using eosio::time_point_sec;
     using eosio::current_time_point;
 
-    // references
-    static name account() { return "defibox"_n; }
-    static name exchange() { return "swap.defi"_n; }
+    // reference
+    const name id = "defibox"_n;
+    const name exchange = "swap.defi"_n;
 
     /**
      * Custom Token struct
@@ -203,8 +203,8 @@ typedef eosio::multi_index< "pools"_n, pools_row > pools;
         uint64_t newbox = poolit->weight * 0.002 * 0.7 * newsecs * 1000000; //adjust vs last update time
         auto times = eos.amount / 10000;
         auto total = poolit->balance.amount + newbox;
-        while(times--){
-            auto mined = total/10000;   //0.01% of the pool balance
+        while (times--) {
+            auto mined = total / 10000;   //0.01% of the pool balance
             total -= mined;
             res.amount += mined;
         }
