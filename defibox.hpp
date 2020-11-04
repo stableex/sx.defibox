@@ -12,6 +12,11 @@ namespace defibox {
     using eosio::singleton;
     using eosio::multi_index;
     using eosio::time_point_sec;
+    using eosio::current_time_point;
+
+    // reference
+    const name id = "defibox"_n;
+    const name exchange = "swap.defi"_n;
 
     /**
      * Custom Token struct
@@ -165,8 +170,8 @@ namespace defibox {
      * ### params
      *
      * - `{uint64_t} pair_id` - pair id
-     * - `{asset} from` - tokens we are trading from
-     * - `{asset} to` - tokens we are trading to
+     * - `{asset} in` - input quantity
+     * - `{asset} out` - output quantity
      *
      * ### returns
      *
@@ -176,33 +181,33 @@ namespace defibox {
      *
      * ```c++
      * const uint64_t pair_id = 12;
-     * const asset from = asset{10000, {"EOS", 4}};
-     * const asset to = asset{12345, {"USDT", 4}};
+     * const asset in = asset{10000, {"EOS", 4}};
+     * const asset out = asset{12345, {"USDT", 4}};
      *
-     * const auto rewards = defibox::get_rewards( pair_id, from, to);
+     * const auto rewards = defibox::get_rewards( pair_id, in, out );
      * // rewards => "0.123456 BOX"
      * ```
      */
 
     static asset get_rewards( const uint64_t pair_id, asset in, asset out )
     {
-        asset res {0, symbol{"BOX",6}};
+        asset rewards {0, symbol{"BOX",6}};
         if(in.symbol != symbol{"EOS",4}) std::swap(in, out);
         if(in.symbol != symbol{"EOS",4})
-            return res;     //return 0 if non-EOS pair
+            return rewards;     //return 0 if non-EOS pair
 
         defibox::pools _pools( "mine2.defi"_n, "mine2.defi"_n.value );
         auto poolit = _pools.find( pair_id );
-        if(poolit==_pools.end()) return res;
+        if (poolit==_pools.end()) return rewards;
 
-        if( eosio::current_time_point().sec_since_epoch() > poolit->end_time.sec_since_epoch()) return res;  //not issued anymore
+        if( eosio::current_time_point().sec_since_epoch() > poolit->end_time.sec_since_epoch()) return rewards;  //not issued anymore
 
         float newsecs = eosio::current_time_point().sec_since_epoch() - poolit->last_issue_time.sec_since_epoch();  //seconds since last update
         auto total = poolit->balance.amount + poolit->weight * 0.002 * 0.7 * newsecs * 1000000; //adjust vs last update time
 
-        res.amount = total - total * pow(0.9999, in.amount / 10000);
+        rewards.amount = total - total * pow(0.9999, in.amount / 10000);
 
-        return res;
+        return rewards;
     }
 
 }
