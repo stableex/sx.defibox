@@ -50,7 +50,7 @@ namespace defibox {
      */
     struct [[eosio::table]] config_row {
         uint8_t             status = 0;
-        uint64_t            pair_id = 663;
+        uint64_t            pair_id = 663;      //last added pair_id
         uint8_t             trade_fee = 20;
         uint8_t             protocol_fee = 10;
         name                fee_account = "fees.defi"_n;
@@ -149,7 +149,7 @@ namespace defibox {
         // table
         defibox::pairs _pairs( "swap.defi"_n, "swap.defi"_n.value );
         auto pairs = _pairs.get( pair_id, "DefiboxLibrary: INVALID_PAIR_ID" );
-        //eosio::check( pairs.reserve0.symbol == sort || pairs.reserve1.symbol == sort, "DefiboxLibrary: sort symbol "+sort.code().to_string()+" for pair "+to_string(pair_id)+" does not match reserves: "+pairs.reserve0.symbol.code().to_string()+","+pairs.reserve1.symbol.code().to_string());
+        eosio::check( pairs.reserve0.symbol == sort || pairs.reserve1.symbol == sort, "DefiboxLibrary: sort symbol "+sort.code().to_string()+" for pair "+to_string(pair_id)+" does not match reserves: "+pairs.reserve0.symbol.code().to_string()+","+pairs.reserve1.symbol.code().to_string());
         eosio::check( pairs.reserve0.symbol == sort || pairs.reserve1.symbol == sort, "DefiboxLibrary: sort symbol doesn't match");
 
         return sort == pairs.reserve0.symbol ?
@@ -184,21 +184,23 @@ namespace defibox {
      * ```
      */
 
-    static asset get_rewards( const uint64_t pair_id, asset from, asset to )
+    static asset get_rewards( const uint64_t pair_id, asset in, asset out )
     {
         asset res {0, symbol{"BOX",6}};
-        auto eos = from.symbol == symbol{"EOS",4} ? from : to;
-        if(eos.symbol != symbol{"EOS",4})
+        if(in.symbol != symbol{"EOS",4}) std::swap(in, out);
+        if(in.symbol != symbol{"EOS",4})
             return res;     //return 0 if non-EOS pair
 
         defibox::pools _pools( "mine2.defi"_n, "mine2.defi"_n.value );
         auto poolit = _pools.find( pair_id );
         if(poolit==_pools.end()) return res;
 
+        if( eosio::current_time_point().sec_since_epoch() > poolit->end_time.sec_since_epoch()) return res;  //not issued anymore
+
         float newsecs = eosio::current_time_point().sec_since_epoch() - poolit->last_issue_time.sec_since_epoch();  //seconds since last update
         auto total = poolit->balance.amount + poolit->weight * 0.002 * 0.7 * newsecs * 1000000; //adjust vs last update time
 
-        res.amount = total - total * pow(0.9999, eos.amount / 10000);
+        res.amount = total - total * pow(0.9999, in.amount / 10000);
 
         return res;
     }
