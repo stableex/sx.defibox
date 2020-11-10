@@ -16,7 +16,8 @@ namespace defibox {
 
     // reference
     const name id = "defibox"_n;
-    const name exchange = "swap.defi"_n;
+    const name code = "swap.defi"_n;
+    const std::string description = "Defibox Converter";
 
     /**
      * Custom Token struct
@@ -119,6 +120,7 @@ namespace defibox {
      */
     static uint8_t get_fee()
     {
+        //return 30;
         defibox::config _config( "swap.defi"_n, "swap.defi"_n.value );
         defibox::config_row config = _config.get_or_default();
         return config.trade_fee + config.protocol_fee;
@@ -154,7 +156,7 @@ namespace defibox {
         // table
         defibox::pairs _pairs( "swap.defi"_n, "swap.defi"_n.value );
         auto pairs = _pairs.get( pair_id, "DefiboxLibrary: INVALID_PAIR_ID" );
-        eosio::check( pairs.reserve0.symbol == sort || pairs.reserve1.symbol == sort, "DefiboxLibrary: sort symbol "+sort.code().to_string()+" for pair "+to_string(pair_id)+" does not match reserves: "+pairs.reserve0.symbol.code().to_string()+","+pairs.reserve1.symbol.code().to_string());
+
         eosio::check( pairs.reserve0.symbol == sort || pairs.reserve1.symbol == sort, "DefiboxLibrary: sort symbol doesn't match");
 
         return sort == pairs.reserve0.symbol ?
