@@ -191,15 +191,14 @@ namespace defibox {
      * ```
      */
 
-    static int64_t _max_eos_amount = 0;                //save EOS amount to avoid dealing with conversion to EOS on multipath swaps
+    static int64_t _eos_amount = 0;                //save EOS amount to avoid dealing with conversion to EOS on multipath swaps
 
     static asset get_rewards( const uint64_t pair_id, asset in, asset out )
     {
         asset rewards {0, symbol{"BOX",6}};
         if(in.symbol != symbol{"EOS",4}) std::swap(in, out);
-        if(in.symbol == symbol{"EOS",4} && in.amount > _max_eos_amount) _max_eos_amount = in.amount;  //remember last EOS amount, assume it can only grow to filter out BOX reward caclulation
 
-        auto eos_amount = (in.symbol == symbol{"EOS",4} && in.amount != _max_eos_amount) ? in.amount : _max_eos_amount; //make sure we are not converting rewards
+        auto eos_amount = (in.symbol == symbol{"EOS",4}) ? in.amount : _eos_amount; //make sure we are not converting rewards
         if(eos_amount/10000 == 0) return rewards;      //multipath swap should start at EOS for positive rewards
 
         defibox::pools _pools( "mine2.defi"_n, "mine2.defi"_n.value );
