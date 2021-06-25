@@ -21,6 +21,10 @@ cleos -v push action basic getreserves '[12, "4,EOS"]' -p basic
 cleos -v push action basic getfee '[]' -p basic
 # //=> "30"
 
-# getReserve
+# getpairid
 cleos -v push action basic getpairid '["BOXBGQ"]' -p basic
-# //=>
+# //=> 1551
+
+# getpairid
+cleos -v push action basic getlptoken '[1551]' -p basic
+# //=> "BOXBGQ"

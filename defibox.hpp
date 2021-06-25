@@ -255,6 +255,39 @@ namespace defibox {
     }
 
     /**
+     * ## STATIC `get_lptoken_from_pairid`
+     *
+     * Get LP token based on Defibox pair id
+     *
+     * ### params
+     *
+     * - `{uint64_t} pair_id` - Defibox pair id
+     *
+     * ### returns
+     *
+     * - `{extended_symbol}` - defibox lp token
+     *
+     * ### example
+     *
+     * ```c++
+     * const uint64_t pair_id = 194;
+     *
+     * const auto ext_sym = defibox::get_lptoken_from_pairid( pair_id );
+     * // ext_sym => "BOXGL,0"
+     * ```
+     */
+    static extended_symbol get_lptoken_from_pairid( uint64_t pair_id )
+    {
+        if(pair_id == 0) return {};
+        std::string res;
+        while(pair_id){
+            res = (char)('A' + pair_id % 26 - 1) + res;
+            pair_id /= 26;
+        }
+        return { symbol { eosio::symbol_code{ "BOX" + res }, 0 }, lp_code };
+    }
+
+    /**
      * ## STATIC `get_withdraw_out`
      *
      * Get reserve tokens amounts after liquidity withdraw

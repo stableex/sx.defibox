@@ -28,4 +28,10 @@ public:
         const uint64_t pair_id = defibox::get_pairid_from_lptoken( symcode );
         print( pair_id );
     }
+
+    [[eosio::action]]
+    void getlptoken(uint64_t pair_id) {
+        const auto lptoken = defibox::get_lptoken_from_pairid( pair_id );
+        print( lptoken );
+    }
 };
