@@ -2,6 +2,7 @@
 
 #include <eosio/asset.hpp>
 #include <eosio/singleton.hpp>
+#include <sx.utils/utils.hpp>
 #include <math.h>
 
 namespace defibox {
@@ -13,10 +14,13 @@ namespace defibox {
     using eosio::multi_index;
     using eosio::time_point_sec;
     using eosio::current_time_point;
+    using eosio::extended_symbol;
+    using eosio::extended_asset;
 
     // reference
     const name id = "defibox"_n;
     const name code = "swap.defi"_n;
+    const name lp_code = "lptoken.defi"_n;
     const std::string description = "Defibox Converter";
 
     /**
@@ -239,14 +243,54 @@ namespace defibox {
      */
     static uint64_t get_pairid_from_lptoken( eosio::symbol_code lp_symcode )
     {
-        uint64_t res = 0;
         std::string str = lp_symcode.to_string();
+        if(str.length() < 3) return 0;
+        uint64_t res = 0;
         if(str[0]!='B' || str[1]!='O' || str[2]!='X') return 0;
         for(auto i = 3; i < str.length(); i++){
             res *= 26;
             res += str[i] - 'A' + 1;
         }
         return res;
+    }
+
+    /**
+     * ## STATIC `get_withdraw_out`
+     *
+     * Get reserve tokens amounts after liquidity withdraw
+     *
+     * ### params
+     *
+     * - `{extended_asset} lp_token` - LP tokens
+     *
+     * ### returns
+     *
+     * - `{pair<extended_asset, extended_asset>}` - pair of reserve assets to receive after withdaw
+     *
+     * ### example
+     *
+     * ```c++
+     * const extended_asset lp_tokens = extended_asset{ 12345678, { {"BOXGL", 0}, "lptoken.defi"_n } };
+     *
+     * const auto [amount1, amount2] = defibox::get_withdraw_out( lp_tokens );
+     * // amount1 => "4583.1234 EOS"
+     * // amount2 => "1803.353300 BOX"
+     * ```
+     */
+    static std::pair<eosio::extended_asset, eosio::extended_asset> get_withdraw_out( eosio::extended_asset lp_token )
+    {
+        const auto supply = sx::utils::get_supply(lp_token.get_extended_symbol());
+        const auto pair_id = get_pairid_from_lptoken(lp_token.quantity.symbol.code());
+        eosio::check( lp_token.contract == lp_code && pair_id && supply.is_valid(), "DefiboxLibrary: invalid LP token");
+
+        defibox::pairs _pairs( code, code.value );
+        const auto pool = _pairs.get( pair_id, "DefiboxLibrary: INVALID_PAIR_ID" );
+
+        const auto share = static_cast<double>( lp_token.quantity.amount ) / supply.amount;
+        const auto res0 = extended_asset{ static_cast<int64_t>( pool.reserve0.amount * share ), extended_symbol{ pool.token0.symbol, pool.token0.contract } };
+        const auto res1 = extended_asset{ static_cast<int64_t>( pool.reserve1.amount * share ), extended_symbol{ pool.token1.symbol, pool.token1.contract } };
+
+        return { res0, res1 };
     }
 
 }

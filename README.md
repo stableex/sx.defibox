@@ -30,6 +30,7 @@ const asset out = uniswap::get_amount_out( quantity, reserves_in, reserves_out, 
 - [STATIC `get_reserves`](#static-get_reserves)
 - [STATIC `get_fee`](#static-get_fee)
 - [STATIC `get_pairid_from_lptoken`](#static-get_pairid_from_lptoken)
+- [STATIC `get_withdraw_out`](#static-get_withdraw_out)
 
 ## STATIC `get_reserves`
 
@@ -87,4 +88,25 @@ Get Defibox pair id from LP token
 ```c++
 const uint64_t pair_id = defibox::get_pairid_from_lptoken( {"BOXGL"} );
 // => 194
+
+```
+## STATIC `get_withdraw_out`
+
+Get reserve tokens amounts after liquidity withdraw
+
+### params
+
+- `{extended_asset} lp_token` - LP tokens
+
+### returns
+
+- `{pair<extended_asset, extended_asset>}` - pair of reserve assets to receive after withdaw
+
+### example
+
+```c++
+const extended_asset lp_tokens = extended_asset{ 12345678, { {"BOXGL", 0}, "lptoken.defi"_n } };
+const auto [amount1, amount2] = defibox::get_withdraw_out( lp_tokens );
+// amount1 => "4583.1234 EOS"
+// amount2 => "1803.353300 BOX"
 ```
