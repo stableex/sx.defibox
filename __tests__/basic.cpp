@@ -22,4 +22,10 @@ public:
         const uint8_t fee = defibox::get_fee();
         print( fee );
     }
+
+    [[eosio::action]]
+    void getpairid(symbol_code symcode) {
+        const uint64_t pair_id = defibox::get_pairid_from_lptoken( symcode );
+        print( pair_id );
+    }
 };

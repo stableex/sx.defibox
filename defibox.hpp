@@ -154,7 +154,7 @@ namespace defibox {
     static std::pair<asset, asset> get_reserves( const uint64_t pair_id, const symbol sort )
     {
         // table
-        defibox::pairs _pairs( "swap.defi"_n, "swap.defi"_n.value );
+        defibox::pairs _pairs( code, code.value );
         auto pairs = _pairs.get( pair_id, "DefiboxLibrary: INVALID_PAIR_ID" );
 
         eosio::check( pairs.reserve0.symbol == sort || pairs.reserve1.symbol == sort, "DefiboxLibrary: sort symbol doesn't match");
@@ -213,6 +213,40 @@ namespace defibox {
         rewards.amount = total - total * pow(0.9999, eos_amount/10000);
 
         return rewards;
+    }
+
+    /**
+     * ## STATIC `get_pairid_from_lptoken`
+     *
+     * Get pair id from supplied BOX*** lp symbol code
+     *
+     * ### params
+     *
+     * - `{symbol_code} symcode` - BOX*** symbol code
+     *
+     * ### returns
+     *
+     * - `{uint64_t}` - defibox pair id
+     *
+     * ### example
+     *
+     * ```c++
+     * const symbol_code symcode = symbolcode{"BOXGL"};
+     *
+     * const auto pair_id = defibox::get_pairid_from_lptoken( symcode );
+     * // pair_id => 194
+     * ```
+     */
+    static uint64_t get_pairid_from_lptoken( eosio::symbol_code lp_symcode )
+    {
+        uint64_t res = 0;
+        std::string str = lp_symcode.to_string();
+        if(str[0]!='B' || str[1]!='O' || str[2]!='X') return 0;
+        for(auto i = 3; i < str.length(); i++){
+            res *= 26;
+            res += str[i] - 'A' + 1;
+        }
+        return res;
     }
 
 }
