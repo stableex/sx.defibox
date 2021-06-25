@@ -29,6 +29,7 @@ const asset out = uniswap::get_amount_out( quantity, reserves_in, reserves_out, 
 
 - [STATIC `get_reserves`](#static-get_reserves)
 - [STATIC `get_fee`](#static-get_fee)
+- [STATIC `get_pairid_from_lptoken`](#static-get_pairid_from_lptoken)
 
 ## STATIC `get_reserves`
 
@@ -67,4 +68,23 @@ Get Defibox total fee
 ```c++
 const uint8_t fee = defibox::get_fee();
 // => 30
+```
+
+## STATIC `get_pairid_from_lptoken`
+
+Get Defibox pair id from LP token
+
+### params
+
+- `{symbol_code} symcode` - Defibox LP token
+
+### returns
+
+- `{uint64_t}` - pair id
+
+### example
+
+```c++
+const uint64_t pair_id = defibox::get_pairid_from_lptoken( {"BOXGL"} );
+// => 194
 ```
