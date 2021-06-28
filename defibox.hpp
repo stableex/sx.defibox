@@ -326,4 +326,30 @@ namespace defibox {
         return { res0, res1 };
     }
 
+    /**
+     * ## STATIC `is_lptoken`
+     *
+     * Check if token is BOX*** LP token
+     *
+     * ### params
+     *
+     * - `{symbol} sym` - BOX*** symbol
+     *
+     * ### returns
+     *
+     * - `{bool}` - true if LP token, false if not
+     *
+     * ### example
+     *
+     * ```c++
+     * const symbol sym = symbol{ {"BOXGL", 0} };
+     *
+     * const auto is = defibox::is_lptoken( sym );
+     * // is => true
+     * ```
+     */
+    static bool is_lptoken( const symbol& sym ) {
+        return utils::get_supply({ sym, lp_code }).symbol.is_valid();
+    }
+
 }
