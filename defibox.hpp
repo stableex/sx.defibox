@@ -349,7 +349,7 @@ namespace defibox {
      * ```
      */
     static bool is_lptoken( const symbol& sym ) {
-        return utils::get_supply({ sym, lp_code }).symbol.is_valid();
+        return sx::utils::get_supply({ sym, lp_code }).symbol.is_valid();
     }
 
 }
