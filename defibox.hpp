@@ -127,6 +127,7 @@ namespace defibox {
         //return 30;
         defibox::config _config( "swap.defi"_n, "swap.defi"_n.value );
         defibox::config_row config = _config.get_or_default();
+        if(config.status == 1) return 0xFF;    //status == 1 => suspended
         return config.trade_fee + config.protocol_fee;
     }
 
