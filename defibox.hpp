@@ -21,6 +21,7 @@ namespace defibox {
     const name id = "defibox"_n;
     const name code = "swap.defi"_n;
     const name lp_code = "lptoken.defi"_n;
+    const name wax_code = "swap.box"_n;
     const std::string description = "Defibox Converter";
 
     /**
@@ -122,10 +123,10 @@ namespace defibox {
      * // => 30
      * ```
      */
-    static uint8_t get_fee()
+    static uint8_t get_fee(const name contract = defibox::code)
     {
         //return 30;
-        defibox::config _config( "swap.defi"_n, "swap.defi"_n.value );
+        defibox::config _config( contract, contract.value );
         defibox::config_row config = _config.get_or_default();
         if(config.status == 1) return 0xFF;    //status == 1 => suspended
         return config.trade_fee + config.protocol_fee;
@@ -156,10 +157,10 @@ namespace defibox {
      * // reserve1 => "12568203.3533 USDT"
      * ```
      */
-    static std::pair<asset, asset> get_reserves( const uint64_t pair_id, const symbol sort )
+    static std::pair<asset, asset> get_reserves( const uint64_t pair_id, const symbol sort, const name contract = defibox::code )
     {
         // table
-        defibox::pairs _pairs( code, code.value );
+        defibox::pairs _pairs( contract, contract.value );
         auto pairs = _pairs.get( pair_id, "DefiboxLibrary: INVALID_PAIR_ID" );
 
         eosio::check( pairs.reserve0.symbol == sort || pairs.reserve1.symbol == sort, "DefiboxLibrary: sort symbol doesn't match");
@@ -311,13 +312,13 @@ namespace defibox {
      * // amount2 => "1803.353300 BOX"
      * ```
      */
-    static std::pair<eosio::extended_asset, eosio::extended_asset> get_withdraw_out( eosio::extended_asset lp_token )
+    static std::pair<eosio::extended_asset, eosio::extended_asset> get_withdraw_out( eosio::extended_asset lp_token, const name contract = defibox::code )
     {
         const auto supply = sx::utils::get_supply(lp_token.get_extended_symbol());
         const auto pair_id = get_pairid_from_lptoken(lp_token.quantity.symbol.code());
         eosio::check( lp_token.contract == lp_code && pair_id && supply.is_valid(), "DefiboxLibrary: invalid LP token");
 
-        defibox::pairs _pairs( code, code.value );
+        defibox::pairs _pairs( contract, contract.value );
         const auto pool = _pairs.get( pair_id, "DefiboxLibrary: INVALID_PAIR_ID" );
 
         const auto share = static_cast<double>( lp_token.quantity.amount ) / supply.amount;
