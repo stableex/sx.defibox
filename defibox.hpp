@@ -18,10 +18,10 @@ namespace defibox {
     using eosio::extended_asset;
 
     // reference
-    const name id = "defibox"_n;
-    const name code = "swap.defi"_n;
-    const name lp_code = "lptoken.defi"_n;
-    const name wax_code = "swap.box"_n;
+    constexpr name id = "defibox"_n;
+    constexpr name code = "swap.defi"_n;
+    constexpr name lp_code = "lptoken.defi"_n;
+    constexpr name wax_code = "swap.box"_n;
     const std::string description = "Defibox Converter";
 
     /**
