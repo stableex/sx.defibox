@@ -114,22 +114,26 @@ namespace defibox {
      *
      * ### returns
      *
-     * - `{uint8_t}` - total fee (trade + protocol)
+     * - `{uint8_t}` - total fee
      *
      * ### example
      *
      * ```c++
      * const uint8_t fee = defibox::get_fee();
-     * // => 30
+     * // => 20
+     *
+     * const uint8_t protocol_fee = defibox::get_protocol_fee();
+     * // => 10
      * ```
      */
     static uint8_t get_fee(const name contract = defibox::code)
     {
-        //return 30;
-        defibox::config _config( contract, contract.value );
-        defibox::config_row config = _config.get_or_default();
-        if(config.status == 1) return 0xFF;    //status == 1 => suspended
-        return config.trade_fee + config.protocol_fee;
+        return 20;
+    }
+
+    static uint8_t get_protocol_fee(const name contract = defibox::code)
+    {
+        return 10;
     }
 
     /**
